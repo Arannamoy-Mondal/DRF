@@ -300,6 +300,7 @@ return redirect('movie_list')
 
 <h1>Validation</h1>
 <h3>It will update within 27 December, 2024</h3>
+
 ``
 ```py
 
