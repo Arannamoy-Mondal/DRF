@@ -133,6 +133,34 @@ fields='__all__' # select fields
 exclude=['name','description']
 
 ```
+
+<strong>Hyperlinked Model Serializer</strong>
+
+`serializers.py`
+
+```py
+class StreamPlatformSerializer(serializers.HyperlinkedModelSerializer):
+    watchlist=WatchListSerializer(many=True,read_only=True)
+    class Meta:
+        model=StreamPlatform
+        fields='__all__'
+```
+
+`views.py`
+
+```py
+class StreamListAV(views.APIView):
+    def get(self,request):
+        platform=StreamPlatform.objects.all()
+        serializer_class=StreamPlatformSerializer(platform,many=True,context={'request': request})
+        return response.Response(serializer_class.data)
+
+class StreamDetailAV(views.APIView):
+    def get(self,request,pk):
+        stream=StreamPlatform.objects.get(pk=pk)
+        serializer=StreamPlatformSerializer(stream,context={'request': request})
+        return response.Response(serializer.data)         
+```
 </div>
 
 
@@ -357,7 +385,7 @@ python manage.py flush
 `For update model, you can use this command:`
 
 ```
-python manage.py makemigrations
+python manage.py makemigrations appName
 ```
 
 ```
@@ -460,6 +488,91 @@ class StreamPlatformSerializer(serializers.ModelSerializer):
     }
 ]
 ```
+</div>
+<div id="seriliazerRelation">
+    <li><a href="#topic">Topic</a></li>
+    <h1>Serializer Relation</h1>
+    <p>It only show specific information</p>
+<h2>StringRelatedField</h2>
+
+`serializers.py`
+
+```py
+class StreamPlatformSerializer(serializers.ModelSerializer):
+    watchlist=serializers.StringRelatedField(many=True,read_only=True) # only show the movie name
+    class Meta:
+        model=StreamPlatform
+        fields='__all__'
+```
+
+<h2>HyperlinkedRelatedField</h2>
+
+`serializers.py`
+
+```py
+class StreamPlatformSerializer(serializers.ModelSerializer):
+    watchlist=serializers.HyperlinkedRelatedField(many=True,read_only=True,view_name='movie_detail')
+    class Meta:
+        model=StreamPlatform
+        fields='__all__'
+```
+
+`views.py`
+
+```py
+class StreamListAV(views.APIView):
+    def get(self,request):
+        platform=StreamPlatform.objects.all()
+        serializer_class=StreamPlatformSerializer(platform,many=True,context={'request': request}) # this context is for HyperlinkedRelatedField
+        return response.Response(serializer_class.data)
+```
+<h3><a href="https://www.django-rest-framework.org/api-guide/relations/" target="_blank">For more visit here</a></h3>
+</div>
+
+<div id="mixins">
+    <a href="#topic">Topic</a>
+    <h1>Mixins</h1>
+    <p>Mixins create HTML form and json format. </p>
+
+<h2>ListModelMixin: Used for all attribute.</h2>
+    
+`views.py`
+
+```py
+class ReviewList(mixins.ListModelMixin,mixins.CreateModelMixin,generics.GenericAPIView):
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+    def get(self,request):
+        return self.list(request)
+    def post(self,request):
+        return self.create(request)
+
+```    
+<h3>Output:</h3>
+<img src="./img/Mixins.png" alt="">
+
+
+<h3>RetriveModelMixin: Used for specific attribute.</h3>
+
+`views.py`
+
+```py
+class ReviewDetail(mixins.RetrieveModelMixin,generics.GenericAPIView):
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+    def get(self,request,pk):
+        return self.retrieve(request)
+    def put(self,request,pk):
+        return self.update(request,pk)
+```
+
+<h3>Output:</h3>
+<img src="./img/Mixins2.png" alt="">
+</div>
+<div id="concreteClassView">
+    <a href="#topic"></a>
+<h1>Concrete Class View:</h1>
+<p></p>
 </div>
 </div>
 </main>
