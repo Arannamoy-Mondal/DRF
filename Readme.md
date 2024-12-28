@@ -1,3 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRF</title>
+</head>
+<body>
+<main>
+<div class="container">
 <div id="topic">
 <h1>Topic:</h1>
 <ol>
@@ -10,6 +20,7 @@
 <li><a href="#validation">Validation</a></li>
 <li><a href="#customSerializerField">Custom Serializer Field</a></li>
 <li><a href="#updatingModel">Update Model</a></li>
+<li><a href="#nestedSerializer">Nested Serializer</a></li>
 </ol>
 </div>
 
@@ -301,10 +312,11 @@ return redirect('movie_list')
 <h1>Validation</h1>
 <h3>It will update within 27 December, 2024</h3>
 
-``
+
+<!-- ``
 ```py
 
-```
+``` -->
 </div>
 
 <div id="customSerializerField">
@@ -332,8 +344,124 @@ return len(obj.name)
 <a href="#topic">Topic</a>
 <h1>Updating model</h1>
 
-``
-```py
+`Use this command:`
+
+``It is better to choice clean all data before updating the model.``
+
+`For delete all data and delete all pycache files,__init__.py,migrations folder.`
 
 ```
+python manage.py flush
+```
+
+`For update model, you can use this command:`
+
+```
+python manage.py makemigrations
+```
+
+```
+python manage.py migrate
+```
+
+`You can also use this command`
+
+```
+python manage.py migrate --run-syncdb
+```
 </div>
+<div id="nestedSerializer">
+    <a href="#topic">Topic</a>
+    <h1>Nested Serializer</h1>
+
+`models.py`
+```py
+class WatchList(models.Model):
+    title=models.CharField(max_length=40)
+    storyline=models.CharField(max_length=40)
+    active=models.BooleanField(default=True)
+    created=models.DateTimeField(auto_now_add=True)
+    platform=models.ManyToManyField(StreamPlatform, blank=True,related_name="watchlist") # it works like reverse lookup
+    # platform=models.ForeignKey(StreamPlatform,on_delete=models.CASCADE,related_name="watchlist")
+
+    def __str__(self):
+        return self.title    
+```
+    
+`serializers.py`
+```py
+class StreamPlatformSerializer(serializers.ModelSerializer):
+    watchlist=WatchListSerializer(many=True,read_only=True) # used from WatchList model (nestedSerializer)
+    class Meta:
+        model=StreamPlatform
+        fields='__all__'
+```    
+
+`Output before using nestedSerializers`
+
+```
+[
+    {
+        "id": 2,
+        "name": "Netflix",
+        "about": "netflix",
+        "website": "http://netflix.com"
+    },
+    {
+        "id": 3,
+        "name": "Prime Video",
+        "about": "Prime Video",
+        "website": "http://primevideo.com"
+    }
+]
+```
+
+`Output after using nestedSerializers`
+
+```
+[
+    {
+        "id": 2,
+        "watchlist": [
+            {
+                "id": 2,
+                "title": "Test",
+                "storyline": "Test",
+                "active": true,
+                "created": "2024-12-26T17:16:11.174810Z",
+                "platform": [
+                    2,
+                    3
+                ]
+            }
+        ],
+        "name": "Netflix",
+        "about": "netflix",
+        "website": "http://netflix.com"
+    },
+    {
+        "id": 3,
+        "watchlist": [
+            {
+                "id": 2,
+                "title": "Test",
+                "storyline": "Test",
+                "active": true,
+                "created": "2024-12-26T17:16:11.174810Z",
+                "platform": [
+                    2,
+                    3
+                ]
+            }
+        ],
+        "name": "Prime Video",
+        "about": "Prime Video",
+        "website": "http://primevideo.com"
+    }
+]
+```
+</div>
+</div>
+</main>
+</body>
+</html>
