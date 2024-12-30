@@ -4,7 +4,7 @@ from django.http import HttpResponse,JsonResponse
 from rest_framework import viewsets,views
 from .serializers import WatchListSerializer,StreamPlatformSerializer,ReviewListSerializer
 from rest_framework import decorators,response,status,mixins,generics,serializers,permissions
-from .permission import AdmimOrReadOnly
+from .permission import AdmimOrReadOnly,ReviewUserOrReadOnly
 # Create your views here.
 
 class movie_list(views.APIView):
@@ -96,11 +96,11 @@ class CreateReview(generics.CreateAPIView):
         serializer.save(watchlist=watchlist,review_user=review_user)
         
 class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
-    permission_classes=[AdmimOrReadOnly]
+    permission_classes=[ReviewUserOrReadOnly]
     queryset=Review.objects.all()
     serializer_class=ReviewListSerializer
     
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
-    permission_classes=[AdmimOrReadOnly]
+    permission_classes=[ReviewUserOrReadOnly]
     queryset=Review.objects.all()
     serializer_class=ReviewListSerializer

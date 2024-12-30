@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRF</title>
+<!-- <title>DRF</title> -->
 </head>
 <body>
 <main>
@@ -665,6 +665,12 @@ class AdmimOrReadOnly(permissions.IsAdminUser):
     def has_permission(self, request, view):
         admin_permission=bool(request.user and request.user.is_staff)
         return request.method=="GET" or admin_permission
+
+class ReviewUserOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.review_user == request.user        
 ```
 
 `views.py`
@@ -683,6 +689,9 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestr
 <p>It provides authentication for API.</p>
 
 `urls.py`
+
+```py
+```
 
 </div>    
 </div>
