@@ -76,31 +76,18 @@ class StreamDetailAV(views.APIView):
         return response.Response(serializer.data)        
 
 
-class ReviewAV(views.APIView):
-    def get(self,request):
-        review=Review.objects.all()
-        serializer=ReviewListSerializer(review,many=True)
-        return response.Response(serializer.data)
-    def post(self,request):
-        serializer=ReviewListSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response(serializer.data)
-        else:
-            return response.Response(serializer.errors)
+class CreateReview(generics.CreateAPIView):
+    serializer_class=ReviewListSerializer
+    queryset=Review.objects.all()
+    def perform_create(self,serializer):
+        pk=self.kwargs.get('pk')
+        movie=WatchList.objects.get(pk=pk)
+        serializer.save(watchlist=movie)
         
-class ReviewList(mixins.ListModelMixin,mixins.CreateModelMixin,generics.GenericAPIView):
+class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
     queryset=Review.objects.all()
     serializer_class=ReviewListSerializer
-    def get(self,request):
-        return self.list(request)
-    def post(self,request):
-        return self.create(request)
     
-class ReviewDetail(mixins.RetrieveModelMixin,generics.GenericAPIView):
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
     queryset=Review.objects.all()
     serializer_class=ReviewListSerializer
-    def get(self,request,pk):
-        return self.retrieve(request)
-    def put(self,request,pk):
-        return self.update(request,pk)

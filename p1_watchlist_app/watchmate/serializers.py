@@ -19,4 +19,4 @@ class StreamPlatformSerializer(serializers.HyperlinkedModelSerializer):
 class ReviewListSerializer(serializers.ModelSerializer):
     class Meta:
         model=Review
-        fields='__all__'
+        exclude=('watchlist',) # exclude watchlist field from review list serializer

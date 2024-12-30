@@ -573,6 +573,35 @@ class ReviewDetail(mixins.RetrieveModelMixin,generics.GenericAPIView):
     <a href="#topic"></a>
 <h1>Concrete Class View:</h1>
 <p></p>
+
+`views.py`
+
+```python
+class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+    
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+```    
+</div>
+<div id="customQueryset">
+    <a href="#topic">Topic</a>
+<h1>Custom Queryset</h1>
+<p>It is used for custom queryset. Like as when we transfer money from our own bank account to another account we do not need to enter sender account address but we need to enter receiver account address. This kind of case handel this custom queryset. But which attribute is set auto in post method time, we need to exclude this from serializer.</p>
+
+`views.py`
+
+```py
+class CreateReview(generics.CreateAPIView):
+    serializer_class=ReviewListSerializer
+    queryset=Review.objects.all()
+    def perform_create(self,serializer):
+        pk=self.kwargs.get('pk')
+        movie=WatchList.objects.get(pk=pk)
+        serializer.save(watchlist=movie)
+```
 </div>
 </div>
 </main>
