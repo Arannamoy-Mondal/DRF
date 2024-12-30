@@ -641,6 +641,40 @@ REST_FRAMEWORK = { # if we use use this only authenticated user can access the a
 }
 ```
 
+`views.py`
+
+```py
+from rest_framework import permissions
+permission_classes=[permissions.IsAuthenticated] #nIt is objeect level permission. It works for specific view or object.
+```
+
+<a href="https://www.django-rest-framework.org/api-guide/permissions/">For more visit DRF documentation.</a>
+</div>
+
+<div id="customPermissionsClass">
+    <a href="#topic">Topic</a>
+<h1>Custom Permissions Class</h1>
+<p>It provides custom permission class.</p>
+
+`permissions.py`
+
+```py
+from rest_framework import permissions
+
+class AdmimOrReadOnly(permissions.IsAdminUser):
+    def has_permission(self, request, view):
+        admin_permission=bool(request.user and request.user.is_staff)
+        return request.method=="GET" or admin_permission
+```
+
+`views.py`
+
+```py
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
+    permission_classes=[AdmimOrReadOnly] # admin can only edit access permissions, not admin read only permissions.
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+```
 </div>
 
 <div id="authentication">
