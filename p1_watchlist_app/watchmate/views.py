@@ -3,7 +3,7 @@ from .models import WatchList,StreamPlatform,Review
 from django.http import HttpResponse,JsonResponse
 from rest_framework import viewsets,views
 from .serializers import WatchListSerializer,StreamPlatformSerializer,ReviewListSerializer
-from rest_framework import decorators,response,status,mixins,generics
+from rest_framework import decorators,response,status,mixins,generics,serializers
 
 # Create your views here.
 
@@ -78,11 +78,18 @@ class StreamDetailAV(views.APIView):
 
 class CreateReview(generics.CreateAPIView):
     serializer_class=ReviewListSerializer
-    queryset=Review.objects.all()
+    # queryset=Review.objects.all()
+    def get_queryset(self):
+        pk=self.kwargs.get('pk')
+        return Review.objects.filter(watchlist=pk)
     def perform_create(self,serializer):
         pk=self.kwargs.get('pk')
-        movie=WatchList.objects.get(pk=pk)
-        serializer.save(watchlist=movie)
+        watchlist=WatchList.objects.get(pk=pk)
+        review_user=self.request.user
+        review_queryset=Review.objects.filter(watchlist=watchlist,review_user=review_user)
+        if review_queryset.exists():
+            raise serializers.ValidationError("You have already reviewed this movie")
+        serializer.save(watchlist=watchlist,review_user=review_user)
         
 class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
     queryset=Review.objects.all()

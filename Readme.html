@@ -603,7 +603,58 @@ class CreateReview(generics.CreateAPIView):
         serializer.save(watchlist=movie)
 ```
 </div>
+<div id="viewSetsAndRouters">
+    <a href="#topic">Topic</a>
+<h1>ViewSets and Routers</h1>
+
+
+`views.py`
+
+```py
+
+```
+</div>
+<div class="temporaryLoginLogout">
+    <a href="#topic">Topic</a>
+<h1>Temporary Login and Logout</h1>
+<p>It provides a simple login logout forms.</p>
+
+`urls.py`
+
+```py
+path('api-auth/', include('rest_framework.urls')),  # Add this line
+```
+</div>
+
+<div class="permission">
+    <a href="#topic">Topic</a>
+<h1>Permission</h1>
+<p>It provides authentication for API.</p>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = { # if we use use this only authenticated user can access the api. It works globally.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+```
+
+</div>
+
+<div id="authentication">
+    <a href="#topic">Topic</a>
+<h1>Authentication</h1>
+<p>It provides authentication for API.</p>
+
+`urls.py`
+
+</div>    
 </div>
 </main>
 </body>
 </html>
+
+
+
