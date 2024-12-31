@@ -727,16 +727,43 @@ class movie_list(views.APIView):
 INSTALLED_APPS = [
     'rest_framework.authtoken',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+       'rest_framework.authentication.TokenAuthentication', # For Basic Authentication use 'rest_framework.authentication.BasicAuthentication',
+       'rest_framework.authentication.SessionAuthentication',
+   ]
+}
 ```
 
 <p>Migrate the model. Before migrating delete all data from model. Otherwise it gives several errors.</p>
 
+<h3>Use this format for testing in postman.</h3>
+<img src="./img/TokenAuthentication1.png" alt="">
+</div>
 
+<div id="tokenAuthorizationLogin">
+    <a href="#topic">Topic</a>
+<h1>Token Authorization Login</h1>
+<p>It provides token authorization login.</p>
+
+`urls.py`
+
+```py
+from rest_framework.authtoken.views import obtain_auth_token
+from django.urls import path,include
+urlpatterns = [
+    path('login/', obtain_auth_token, name='login'),  # Add this line for token authorization login
+]
+```
+
+<h3>Use this format for testing in postman.</h3>
+<h3>Data input format be like this. Before input please confirm that postman has no token.</h3>
+<img src="./img/TokenAuthorization2.png" alt="">
 </div>
 </div>
 </main>
 </body>
 </html>
-
 
 

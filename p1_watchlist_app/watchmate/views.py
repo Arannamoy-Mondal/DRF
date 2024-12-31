@@ -10,7 +10,6 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 
 class movie_list(views.APIView):
     permission_classes=[permissions.IsAuthenticated]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
         movies=WatchList.objects.all()
         serializer=WatchListSerializer(movies,many=True)
