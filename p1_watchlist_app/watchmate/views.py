@@ -9,7 +9,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 # Create your views here.
 
 class movie_list(views.APIView):
-    permission_classes=[permissions.IsAuthenticated]
+    # permission_classes=[permissions.IsAuthenticated]
     def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
         movies=WatchList.objects.all()
         serializer=WatchListSerializer(movies,many=True)
@@ -58,7 +58,7 @@ class movie_detail(views.APIView):
 
 
 class StreamListAV(views.APIView):
-    permission_classes=[AdmimOrReadOnly]
+    # permission_classes=[AdmimOrReadOnly]
     def get(self,request):
         platform=StreamPlatform.objects.all()
         serializer_class=StreamPlatformSerializer(platform,many=True,context={'request': request})
