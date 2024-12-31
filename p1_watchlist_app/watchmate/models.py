@@ -16,6 +16,8 @@ class WatchList(models.Model):
     active=models.BooleanField(default=True)
     created=models.DateTimeField(auto_now_add=True)
     platform=models.ManyToManyField(StreamPlatform,related_name="watchlists")
+    number_rating=models.IntegerField(default=0)
+    avg_rating=models.FloatField(default=0.0)
     # review=models.ManyToManyField(Review,on_delete=models.CASCADE,related_name="reviews_only",null=True)
     # platform=models.ForeignKey(StreamPlatform,on_delete=models.CASCADE,related_name="watchlist")
 

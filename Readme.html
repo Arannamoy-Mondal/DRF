@@ -614,7 +614,7 @@ class CreateReview(generics.CreateAPIView):
 
 ```
 </div>
-<div class="temporaryLoginLogout">
+<div id="temporaryLoginLogout">
     <a href="#topic">Topic</a>
 <h1>Temporary Login and Logout</h1>
 <p>It provides a simple login logout forms.</p>
@@ -626,7 +626,7 @@ path('api-auth/', include('rest_framework.urls')),  # Add this line
 ```
 </div>
 
-<div class="permission">
+<div id="permission">
     <a href="#topic">Topic</a>
 <h1>Permission</h1>
 <p>It provides authentication for API.</p>
@@ -683,17 +683,56 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestr
 ```
 </div>
 
-<div id="authentication">
+<div id="basicAuthentication">
     <a href="#topic">Topic</a>
-<h1>Authentication</h1>
-<p>It provides authentication for API.</p>
+<h1>Basic Authentication</h1>
+<p>It provides authentication for API. Not recommended. Just used for testing. Use postman for authentication.</p>
 
-`urls.py`
+`settings.py`
 
 ```py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+       'rest_framework.authentication.BasicAuthentication',
+       'rest_framework.authentication.SessionAuthentication',
+   ]
+}
 ```
 
+
+`views.py`
+
+```py
+class movie_list(views.APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication] # it works for basic authentication
+     def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
+        movies=WatchList.objects.all()
+        serializer=WatchListSerializer(movies,many=True)
+        return response.Response(serializer.data)
+```
+
+<p>User password must be base64 encode format. Just search base64 converter on browser and convert this format username:password.</p>
+<img src="./img/BasicAutentication1.png" alt="">
 </div>    
+
+<div id="tokenAuthenticationIntro">
+    <a href="#topic">Topic</a>  
+<h1>Token Authentication</h1>
+<p>Set Up: Add 'rest_framework.authtoken' on Intalled Apps.</p>
+
+`settings.py`
+
+```py   
+INSTALLED_APPS = [
+    'rest_framework.authtoken',
+]
+```
+
+<p>Migrate the model. Before migrating delete all data from model. Otherwise it gives several errors.</p>
+
+
+</div>
 </div>
 </main>
 </body>

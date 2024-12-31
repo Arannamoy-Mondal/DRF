@@ -5,10 +5,12 @@ from rest_framework import viewsets,views
 from .serializers import WatchListSerializer,StreamPlatformSerializer,ReviewListSerializer
 from rest_framework import decorators,response,status,mixins,generics,serializers,permissions
 from .permission import AdmimOrReadOnly,ReviewUserOrReadOnly
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 # Create your views here.
 
 class movie_list(views.APIView):
-    permission_classes=[AdmimOrReadOnly]
+    permission_classes=[permissions.IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
         movies=WatchList.objects.all()
         serializer=WatchListSerializer(movies,many=True)
@@ -93,7 +95,16 @@ class CreateReview(generics.CreateAPIView):
         review_queryset=Review.objects.filter(watchlist=watchlist,review_user=review_user)
         if review_queryset.exists():
             raise serializers.ValidationError("You have already reviewed this movie")
+        
+        if watchlist.number_rating==0:
+            watchlist.avg_rating=serializer.validated_data['rating']
+        else:
+            watchlist.avg_rating=(watchlist.avg_rating+serializer.validated_data['rating'])/2    
+
+        watchlist.number_rating=watchlist.number_rating+1
+        watchlist.save()
         serializer.save(watchlist=watchlist,review_user=review_user)
+
         
 class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
     permission_classes=[ReviewUserOrReadOnly]
