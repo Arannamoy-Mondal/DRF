@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRF</title>
+<!-- <title>DRF</title> -->
 </head>
 <body>
 <main>
@@ -603,7 +603,140 @@ class CreateReview(generics.CreateAPIView):
         serializer.save(watchlist=movie)
 ```
 </div>
+<div id="viewSetsAndRouters">
+    <a href="#topic">Topic</a>
+<h1>ViewSets and Routers</h1>
+
+
+`views.py`
+
+```py
+
+```
+</div>
+<div id="temporaryLoginLogout">
+    <a href="#topic">Topic</a>
+<h1>Temporary Login and Logout</h1>
+<p>It provides a simple login logout forms.</p>
+
+`urls.py`
+
+```py
+path('api-auth/', include('rest_framework.urls')),  # Add this line
+```
+</div>
+
+<div id="permission">
+    <a href="#topic">Topic</a>
+<h1>Permission</h1>
+<p>It provides authentication for API.</p>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = { # if we use use this only authenticated user can access the api. It works globally.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+```
+
+`views.py`
+
+```py
+from rest_framework import permissions
+permission_classes=[permissions.IsAuthenticated] #nIt is objeect level permission. It works for specific view or object.
+```
+
+<a href="https://www.django-rest-framework.org/api-guide/permissions/">For more visit DRF documentation.</a>
+</div>
+
+<div id="customPermissionsClass">
+    <a href="#topic">Topic</a>
+<h1>Custom Permissions Class</h1>
+<p>It provides custom permission class.</p>
+
+`permissions.py`
+
+```py
+from rest_framework import permissions
+
+class AdmimOrReadOnly(permissions.IsAdminUser):
+    def has_permission(self, request, view):
+        admin_permission=bool(request.user and request.user.is_staff)
+        return request.method=="GET" or admin_permission
+
+class ReviewUserOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.review_user == request.user        
+```
+
+`views.py`
+
+```py
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
+    permission_classes=[AdmimOrReadOnly] # admin can only edit access permissions, not admin read only permissions.
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+```
+</div>
+
+<div id="basicAuthentication">
+    <a href="#topic">Topic</a>
+<h1>Basic Authentication</h1>
+<p>It provides authentication for API. Not recommended. Just used for testing. Use postman for authentication.</p>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+       'rest_framework.authentication.BasicAuthentication',
+       'rest_framework.authentication.SessionAuthentication',
+   ]
+}
+```
+
+
+`views.py`
+
+```py
+class movie_list(views.APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication] # it works for basic authentication
+     def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
+        movies=WatchList.objects.all()
+        serializer=WatchListSerializer(movies,many=True)
+        return response.Response(serializer.data)
+```
+
+<p>User password must be base64 encode format. Just search base64 converter on browser and convert this format username:password.</p>
+<img src="./img/BasicAutentication1.png" alt="">
+</div>    
+
+<div id="tokenAuthenticationIntro">
+    <a href="#topic">Topic</a>  
+<h1>Token Authentication</h1>
+<p>Set Up: Add 'rest_framework.authtoken' on Intalled Apps.</p>
+
+`settings.py`
+
+```py   
+INSTALLED_APPS = [
+    'rest_framework.authtoken',
+]
+```
+
+<p>Migrate the model. Before migrating delete all data from model. Otherwise it gives several errors.</p>
+
+
+</div>
 </div>
 </main>
 </body>
 </html>
+
+
+
