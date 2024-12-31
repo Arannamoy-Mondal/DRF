@@ -33,7 +33,7 @@
 <li><a href="tokenAuthenticationIntro">Token Authentication</a></li>
 <li><a href="#tokenAuthorizationLogin">Token Authorization For Login</a></li>
 <li><a href="#tokenAuthorizationForRegistrationAndGetToken">Token Authorization While Registration Complete</a></li>
-<li><a href="#ogOut">Token delete while logout</a></li>
+<li><a href="#logOut">Token delete while logout</a></li>
 <li><a href="#jwt">JWT</a></li>
 <li><a href="#jwtRotateRefreshToken">JWT Rotation Refresh Token</a></li>
 <li><a href="#jwtTokenCreationWhileRegistration">JWT Token Creation While Registration</a></li>
