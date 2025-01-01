@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
+    'django_filters',
     'watchmate',
     'user_app',
 ]
@@ -137,9 +138,13 @@ REST_FRAMEWORK = {
             'rest_framework.throttling.UserRateThrottle'
         ],
         'DEFAULT_THROTTLE_RATES': {
-            'anon': '1/day',
-            'user': '1000/day'
-        }
+            'anon': '3000/day',
+            'user': '5000/day',
+            'create-review': '10000/day', # check this line
+            'review-list': '10000/day' # check this line
+        },
+        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+        'PAGE_SIZE': 1,
 }
 
 SIMPLE_JWT = {

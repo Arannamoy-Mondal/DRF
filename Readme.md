@@ -40,6 +40,9 @@
 <li><a href="#throttlingIntro">Throttling Intro</a></li>
 <li><a href="#throttleRate">Throttle Rate Limiting</a></li>
 <li><a href="#customRateAndThrottle">Custom Rate Throttle</a></li>
+<li><a href="#filteringIntro">Filter Intro</a></li>
+<li><a href="#genricFiltering">Generic Filter</a></li>
+<li><a href="#searchFilterAndOrderFilter">Search Filter And Order</a></li>
 <li><a href="#pagination">Pagination</a></li>
 </ol>
 </div>
@@ -962,13 +965,14 @@ SIMPLE_JWT
 <h1>Throttle Rate Limiting</h1>
 <h3>For example, allow 100 requests per hour per IP address.</h3>
 <h3>To implement this, install the rest_framework_throttling package.</h3>
-<h3>Command for install throttling</h3>
+
+<h3>For globally throttle</h3>
 
 `settings.py`
     
 ```py
 REST_FRAMEWORK = {
-    'DEFAULT_THROTTLE_CLASSES': [
+    'DEFAULT_THROTTLE_CLASSES': [ # this is for globally available
        'rest_framework.throttling.AnonRateThrottle',
        'rest_framework.throttling.UserRateThrottle'
         ],
@@ -977,6 +981,47 @@ REST_FRAMEWORK = {
             'user': '1000/day'
         }
     }
+```
+
+<h3>For local throttle</h3>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = {
+    #'DEFAULT_THROTTLE_CLASSES': [ # this is for globally available
+    #   'rest_framework.throttling.AnonRateThrottle', # comment this
+    #   'rest_framework.throttling.UserRateThrottle', # comment this
+    #   'rest_framework.throttling.CustomThrottle' # comment this
+    #    ],
+        'DEFAULT_THROTTLE_RATES': {
+            'anon': '10/day',
+            'user': '1000/day',
+            'custom': '100/day'
+        }
+    }
+```
+
+`views.py`
+
+```py
+from rest_framework.throttling import UserRateThrottle,AnonRateThrottle
+class movie_list(views.APIView):
+    # permission_classes=[permissions.IsAuthenticated]
+    throttle_classes=[UserRateThrottle,AnonRateThrottle] # this is applied for this classbased view only
+    def get(self,request): # instead of get condition and can not use if serializer.is_valid() in get method
+        movies=WatchList.objects.all()
+        serializer=WatchListSerializer(movies,many=True)
+        return response.Response(serializer.data)
+        
+    def post(self,request): 
+        serializer=WatchListSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors)
+
 ```
 
 <h3>Input and output will be like this.</h3>
@@ -988,12 +1033,186 @@ REST_FRAMEWORK = {
 <h1>Custom Rate and Throttle</h1>
 <h3>It provides custom rate and throttle.</h3>
 <h3>To implement this, create a custom throttle class and register it in the DEFAULT_THROTTLE_CLASSES list.</h3>
-<h3>Code part will update within 10 th January, 2025</h3>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+       'rest_framework.authentication.TokenAuthentication',
+       'rest_framework.authentication.SessionAuthentication',
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
+   ],
+   'DEFAULT_THROTTLE_CLASSES': [
+           'rest_framework.throttling.AnonRateThrottle',
+           'rest_framework.throttling.UserRateThrottle'
+       ],
+       'DEFAULT_THROTTLE_RATES': {
+           'anon': '3/day',
+           'user': '5/day',
+           'create-review': '10/day', # check this line
+           'review-list': '50/day' # check this line
+       }
+}
+```
+
+`throttling.py`
+
+```py
+from rest_framework.throttling import UserRateThrottle,AnonRateThrottle
+
+
+class ReviewCreateThrottle(UserRateThrottle):
+    scope='create-review'
+
+class ReviewListThrottle(UserRateThrottle):
+    scope='review-list'    
+```    
+
+`views.py`
+
+```py
+from rest_framework.throttling import UserRateThrottle,AnonRateThrottle
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView): # RetrieveUpdateDestroyAPIView is a class based view that provides get, put, patch and delete method handlers.
+    permission_classes=[ReviewUserOrReadOnly]
+    throttle_classes=[ReviewListThrottle]
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+```
+
+</div>
+
+
+<div id="filteringIntro">
+    <a href="#topic">Topic</a>
+<h1>Filtering</h1>
+<h3>It provides filtering.</h3>
+<!-- <h3>Code part will be update within 7th January.</h3> -->
+
+`views.py`
+
+```py
+class UserReviewDetail(generics.ListAPIView):
+    serializer_class=ReviewListSerializer
+    def get_queryset(self):
+        review_user=self.kwargs['username']
+        return Review.objects.filter(review_user__username=review_user)
+```
+
+`urls.py`
+
+```py
+path('review/<str:username>',UserReviewDetail.as_view(),name='user-review-detail'), # review list for specific movie
+```    
+</div>
+
+<div id="genricFiltering">
+    <a href="#topic">Topic</a>
+    <h1>Generic Filtering</h1>
+    <h3>It provides generic filtering. Generic filtering can use only generic classes. It can not used in APIView.</h3>
+
+`settings.py`
+
+```py
+INSTALLED_APPS = [
+    ...
+    'django_filters',
+    ...
+]
+```
+
+`views.py`
+
+```py
+class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
+    permission_classes=[ReviewUserOrReadOnly]
+    # throttle_classes=[ReviewListThrottle]
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['review_user__username','active']
+```
+
+
+<h3>URL format: http://127.0.0.1:8000/app/review?active=false , http://127.0.0.1:8000/app/review?active=false&review_user__username=admin</h3>
+</div>
+
+<div id="searchFilterAndOrderFilter">
+    <a href="#topic">Topic</a>
+    <h1>Search, Filter, and Order Filter</h1>
+    <h3>It provides search, filter, and order filter.</h3>
+
+`views.py`
+
+```py
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
+
+class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
+    permission_classes=[ReviewUserOrReadOnly]
+    # throttle_classes=[ReviewListThrottle]
+    queryset=Review.objects.all()
+    serializer_class=ReviewListSerializer
+    filter_backends=[DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter]
+    filterset_fields=['review_user__username','active']
+    search_fields=['review_user__username','rating']
+    ordering_fields=['rating','created','updated']
+```
+
+<h3>Click filter icon and got this interface.</h3>
+<img src="./img/Search&Ordering&Filter.png" alt="">
 </div>
 
 <div id="pagination">
     <a href="#topic">Topic</a>
+<h1>Pagination</h1>
+<h3>It provides pagination.</h3>
+
+`settings.py`
+
+```py
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5
+}
+```
+<h3>This setting is for globally.</h3>
+
+
+`pagination.py`
+
+```py
+from rest_framework import pagination
+class WatchListPagination(pagination.PageNumberPagination):
+    page_size=2
+    page_size_query_param='page_size'
+    max_page_size=10
+
+
+class ReviewListPagination(pagination.PageNumberPagination):
+    page_size=1 # number of items per page
+    page_size_query_param='page_size' # parameter for pagination
+    max_page_size=10 # maximum page size
+```
+
+`views.py`
+
+```py
+from.pagination import WatchListPagination,ReviewListPagination
+class ReviewList(generics.ListCreateAPIView): #ListAPIView with CreateAPIView is a class based view that provides get and post method handlers.
+    permission_classes=[ReviewUserOrReadOnly]
+    # throttle_classes=[ReviewListThrottle]
+    queryset=Review.objects.all()
+    pagination_class=ReviewListPagination
+    serializer_class=ReviewListSerializer
+    filter_backends=[DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter]
+    filterset_fields=['review_user__username','active']
+    search_fields=['review_user__username','rating']
+    ordering_fields=['rating','created','updated']
+```
 </div>
+
+
 </div>
 </main>
 </body>
